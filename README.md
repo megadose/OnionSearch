@@ -13,6 +13,11 @@ cd OnionSearch
 pip3 install -r requierements.txt
 python3 search.py -h
 ```
+## 📚 Search engines used
+- Ahmia
+- Torch
+- Darksearch io
+- OnionLand
 ## 📈  Usage
 ```
 python3 search.py [-h] --search "search" [--proxy 127.0.0.1:1337] [--output mylinks.txt]
