@@ -16,7 +16,7 @@ OnionSearch is a script that scrapes urls on different .onion search engines. In
 ```
 git clone https://github.com/megadose/OnionSearch.git
 cd OnionSearch
-pip3 install -r requierements.txt
+pip3 install -r requirements.txt
 python3 search.py -h
 ```
 ## 📈  Usage
