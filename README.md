@@ -1,8 +1,8 @@
 # OnionSearch
 ## Educational purposes only
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
-OnionSearch is a script that scrapes urls on different .onion search engines. In 30 minutes you get 10,000 unique urls.
 
+OnionSearch is a script that scrapes urls on different .onion search engines. In 30 minutes you get 10,000 unique urls.
 ## 💡 Prerequisite
 [Python 3](https://www.python.org/download/releases/3.0/)
    
