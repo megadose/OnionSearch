@@ -6,6 +6,12 @@ OnionSearch is a script that scrapes urls on different .onion search engines. In
 ## 💡 Prerequisite
 [Python 3](https://www.python.org/download/releases/3.0/)
    
+## 📚 Search engines used
+- Ahmia
+- Torch
+- Darksearch io
+- OnionLand
+
 ## 🛠️ Installation
 ```
 git clone https://github.com/megadose/OnionSearch.git
@@ -13,11 +19,6 @@ cd OnionSearch
 pip3 install -r requierements.txt
 python3 search.py -h
 ```
-## 📚 Search engines used
-- Ahmia
-- Torch
-- Darksearch io
-- OnionLand
 ## 📈  Usage
 ```
 python3 search.py [-h] --search "search" [--proxy 127.0.0.1:1337] [--output mylinks.txt]
