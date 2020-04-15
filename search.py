@@ -61,7 +61,9 @@ def print_epilog():
 
 parser = argparse.ArgumentParser(epilog=print_epilog())
 parser.add_argument("--proxy", default='localhost:9050', type=str, help="Set Tor proxy (default: 127.0.0.1:9050)")
-parser.add_argument("--output", default='output.txt', type=str, help="Output File (default: output.txt)")
+parser.add_argument("--output", default='output_$SEARCH_$DATE.txt', type=str,
+                    help="Output File (default: output_$SEARCH_$DATE.txt), where $SEARCH is replaced by the first "
+                         "chars of the search string and $DATE is replaced by the datetime")
 parser.add_argument("search", type=str, help="The search string or phrase")
 parser.add_argument("--limit", type=int, default=0, help="Set a max number of pages per engine to load")
 parser.add_argument("--barmode", type=str, default="fixed", help="Can be 'fixed' (default) or 'unknown'")
@@ -427,7 +429,6 @@ def grams(searchstr):
 
         with tqdm(total=1, initial=0, desc="%20s" % "Grams", unit="req", ascii=False, ncols=120,
                   bar_format=tqdm_bar_format) as progress_bar:
-
             resp = s.post(grams_url2, data={"req": searchstr, "_token": token})
             soup = BeautifulSoup(resp.text, 'html.parser')
             link_finder("grams", soup)
@@ -985,6 +986,14 @@ def scrape():
 
     start_time = datetime.now()
 
+    # Building the filename
+    filename = args.output
+    filename = str(filename).replace("$DATE", start_time.strftime("%Y%m%d%H%M%S"))
+    search = str(args.search).replace(" ", "")
+    if len(search) > 10:
+        search = search[0:9]
+    filename = str(filename).replace("$SEARCH", search)
+
     if args.engines and len(args.engines) > 0:
         engines = args.engines[0]
         for e in engines:
@@ -1004,7 +1013,7 @@ def scrape():
     print("\nReport:")
     print("  Execution time: %s seconds" % (stop_time - start_time))
 
-    f = open(args.output, "w+")
+    f = open(filename, "w+")
     for engine in result.keys():
         print("  {}: {}".format(engine, str(len(result[engine]))))
         total += len(result[engine])
@@ -1012,7 +1021,7 @@ def scrape():
             f.write("\"{}\",\"{}\",\"{}\"\n".format(engine, i["name"], i["link"]))
 
     f.close()
-    print("  Total: {} links written to {}".format(str(total), args.output))
+    print("  Total: {} links written to {}".format(str(total), filename))
 
 
 if __name__ == "__main__":
