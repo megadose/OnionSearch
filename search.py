@@ -64,6 +64,8 @@ parser.add_argument("--proxy", default='localhost:9050', type=str, help="Set Tor
 parser.add_argument("--output", default='output_$SEARCH_$DATE.txt', type=str,
                     help="Output File (default: output_$SEARCH_$DATE.txt), where $SEARCH is replaced by the first "
                          "chars of the search string and $DATE is replaced by the datetime")
+parser.add_argument("--continuous_write", type=bool, default=False,
+                    help="Write progressively to output file (default: False)")
 parser.add_argument("search", type=str, help="The search string or phrase")
 parser.add_argument("--limit", type=int, default=0, help="Set a max number of pages per engine to load")
 parser.add_argument("--barmode", type=str, default="fixed", help="Can be 'fixed' (default) or 'unknown'")
@@ -74,6 +76,7 @@ args = parser.parse_args()
 proxies = {'http': 'socks5h://{}'.format(args.proxy), 'https': 'socks5h://{}'.format(args.proxy)}
 tqdm_bar_format = "{desc}: {percentage:3.0f}% |{bar}| {n_fmt:3s} / {total_fmt:3s} [{elapsed:5s} < {remaining:5s}]"
 result = {}
+filename = args.output
 
 
 def random_headers():
@@ -783,11 +786,18 @@ def deeplink(searchstr):
 
 def link_finder(engine_str, data_obj):
     global result
+    global filename
     name = ""
     link = ""
+    f = None
+
+    if args.continuous_write:
+        f = open(filename, "a")
 
     def append_link():
         result[engine_str].append({"name": name, "link": link})
+        if args.continuous_write and f.writable():
+            f.write("\"{}\",\"{}\",\"{}\"\n".format(engine_str, name, link))
 
     if engine_str not in result:
         result[engine_str] = []
@@ -829,13 +839,11 @@ def link_finder(engine_str, data_obj):
 
     if engine_str == "evosearch":
         if data_obj.find('div', attrs={"id": "results"}) is not None:
-            count = 0
             for div in data_obj.find('div', attrs={"id": "results"}).find_all('div', attrs={"class": "odrow"}):
                 name = clear(div.find('div', attrs={"class": "title"}).find('a').get_text())
                 link = clear(div.find('div', attrs={"class": "title"}).find('a')['href']
                              .replace("./include/click_counter.php?url=", "")
                              .replace("&query={}".format(args.search), ""))
-                count += 1
                 append_link()
 
     if engine_str == "grams":
@@ -849,13 +857,12 @@ def link_finder(engine_str, data_obj):
                 append_link()
 
     if engine_str == "haystack":
-        if data_obj.find('div', attrs={"class": "result"}) is None:
-            return -1
-        for div in data_obj.find_all('div', attrs={"class": "result"}):
-            if div.find('a') is not None and div.find('i') is not None:
-                name = clear(div.find('a').get_text())
-                link = clear(div.find('i').get_text())
-                append_link()
+        if data_obj.find('div', attrs={"class": "result"}) is not None:
+            for div in data_obj.find_all('div', attrs={"class": "result"}):
+                if div.find('a') is not None and div.find('i') is not None:
+                    name = clear(div.find('a').get_text())
+                    link = clear(div.find('i').get_text())
+                    append_link()
 
     if engine_str == "multivac":
         for i in data_obj.find_all('dl'):
@@ -866,7 +873,7 @@ def link_finder(engine_str, data_obj):
                     link = clear(link_tag['href'])
                     append_link()
                 else:
-                    return -1
+                    break
 
     if engine_str == "notevil":
         ''' As for OnionLand, we could use the span instead of the href to get a beautiful link
@@ -889,13 +896,12 @@ def link_finder(engine_str, data_obj):
             append_link()
 
     if engine_str == "onionland":
-        if data_obj.find('div', attrs={"class": "row no-result-row"}):
-            return -1
-        for i in data_obj.find_all('div', attrs={"class": "result-block"}):
-            if not str(clear(i.find('div', attrs={'class': "title"}).find('a')['href'])).startswith("/ads"):
-                name = clear(i.find('div', attrs={'class': "title"}).get_text())
-                link = clear(i.find('div', attrs={'class': "link"}).get_text())
-                append_link()
+        if not data_obj.find('div', attrs={"class": "row no-result-row"}):
+            for i in data_obj.find_all('div', attrs={"class": "result-block"}):
+                if not str(clear(i.find('div', attrs={'class': "title"}).find('a')['href'])).startswith("/ads"):
+                    name = clear(i.find('div', attrs={'class': "title"}).get_text())
+                    link = clear(i.find('div', attrs={'class': "link"}).get_text())
+                    append_link()
 
     if engine_str == "onionsearchengine":
         for i in data_obj.find_all('table'):
@@ -969,6 +975,12 @@ def link_finder(engine_str, data_obj):
                 link = n.find('a')['href']
                 append_link()
 
+    if args.continuous_write and not f.closed:
+        f.close()
+
+    if len(result[engine_str]) <= 0:
+        return -1
+
     return 1
 
 
@@ -981,13 +993,20 @@ def call_func_as_str(function_name, function_arg):
         print("Error: unable to connect")
 
 
+def write_to_file(filename, results, engine):
+    f = open(filename, "w+")
+    for i in results[engine]:
+        f.write("\"{}\",\"{}\",\"{}\"\n".format(engine, i["name"], i["link"]))
+    f.close()
+
+
 def scrape():
     global result
+    global filename
 
     start_time = datetime.now()
 
     # Building the filename
-    filename = args.output
     filename = str(filename).replace("$DATE", start_time.strftime("%Y%m%d%H%M%S"))
     search = str(args.search).replace(" ", "")
     if len(search) > 10:
@@ -1009,18 +1028,19 @@ def scrape():
 
     stop_time = datetime.now()
 
+    if not args.continuous_write:
+        f = open(filename, "w+")
+        for engine in result.keys():
+            for i in result[engine]:
+                f.write("\"{}\",\"{}\",\"{}\"\n".format(engine, i["name"], i["link"]))
+        f.close()
+
     total = 0
     print("\nReport:")
     print("  Execution time: %s seconds" % (stop_time - start_time))
-
-    f = open(filename, "w+")
     for engine in result.keys():
         print("  {}: {}".format(engine, str(len(result[engine]))))
         total += len(result[engine])
-        for i in result[engine]:
-            f.write("\"{}\",\"{}\",\"{}\"\n".format(engine, i["name"], i["link"]))
-
-    f.close()
     print("  Total: {} links written to {}".format(str(total), filename))
 
 

@@ -46,7 +46,8 @@ python3 search.py -h
 ## 📈  Usage
 
 ```
-usage: search.py [-h] [--proxy PROXY] [--output OUTPUT] [--limit LIMIT]
+usage: search.py [-h] [--proxy PROXY] [--output OUTPUT]
+                 [--continuous_write CONTINUOUS_WRITE] [--limit LIMIT]
                  [--barmode BARMODE] [--engines [ENGINES [ENGINES ...]]]
                  [--exclude [EXCLUDE [EXCLUDE ...]]]
                  search
@@ -60,13 +61,14 @@ optional arguments:
   --output OUTPUT       Output File (default: output_$SEARCH_$DATE.txt), where
                         $SEARCH is replaced by the first chars of the search
                         string and $DATE is replaced by the datetime
+  --continuous_write CONTINUOUS_WRITE
+                        Write progressively to output file (default: False)
   --limit LIMIT         Set a max number of pages per engine to load
   --barmode BARMODE     Can be 'fixed' (default) or 'unknown'
   --engines [ENGINES [ENGINES ...]]
                         Engines to request (default: full list)
   --exclude [EXCLUDE [EXCLUDE ...]]
                         Engines to exclude (default: none)
-
 [...]
 ```
 
@@ -116,6 +118,12 @@ python3 search.py "computer" --output "\$DATE_\$SEARCH.csv"
 
 In the csv file produced, the name and url strings are sanitized as much as possible, but there might still be some problems.
 
+Note that you can choose to progressively write to the output (instead of everything at the end, which would prevent
+losing the results if something goes wrong). To do so you have to use `--continuous-write True`, just as is:
+```
+python3 search.py "computer" --continuous-write True
+```
+You can then use the `tail -f` (tail follow) Unix command to actively watch or monitor the results of the scraping.
 
 ## 📝 License
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.fr.html)
