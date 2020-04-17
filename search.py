@@ -1,4 +1,5 @@
 import argparse
+import csv
 import math
 import re
 import time
@@ -51,15 +52,27 @@ supported_engines = [
     "deeplink",
 ]
 
+available_csv_fields = [
+    "engine",
+    "name",
+    "link",
+    "domain"
+    # Todo: add description, but needs modify scraping (link_finder func) for all the engines
+]
+
 
 def print_epilog():
-    epilog = "Supported engines: ".format(len(supported_engines))
+    epilog = "Available CSV fields: \n\t"
+    for f in available_csv_fields:
+        epilog += " {}".format(f)
+    epilog += "\n"
+    epilog += "Supported engines: \n\t"
     for e in supported_engines:
         epilog += " {}".format(e)
     return epilog
 
 
-parser = argparse.ArgumentParser(epilog=print_epilog())
+parser = argparse.ArgumentParser(epilog=print_epilog(), formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--proxy", default='localhost:9050', type=str, help="Set Tor proxy (default: 127.0.0.1:9050)")
 parser.add_argument("--output", default='output_$SEARCH_$DATE.txt', type=str,
                     help="Output File (default: output_$SEARCH_$DATE.txt), where $SEARCH is replaced by the first "
@@ -71,13 +84,19 @@ parser.add_argument("--limit", type=int, default=0, help="Set a max number of pa
 parser.add_argument("--barmode", type=str, default="fixed", help="Can be 'fixed' (default) or 'unknown'")
 parser.add_argument("--engines", type=str, action='append', help='Engines to request (default: full list)', nargs="*")
 parser.add_argument("--exclude", type=str, action='append', help='Engines to exclude (default: none)', nargs="*")
+parser.add_argument("--fields", type=str, action='append',
+                    help='Fields to output to csv file (default: engine name link), available fields are shown below',
+                    nargs="*")
+parser.add_argument("--field_delimiter", type=str, default=",", help='Delimiter for the CSV fields')
 
 args = parser.parse_args()
 proxies = {'http': 'socks5h://{}'.format(args.proxy), 'https': 'socks5h://{}'.format(args.proxy)}
 tqdm_bar_format = "{desc}: {percentage:3.0f}% |{bar}| {n_fmt:3s} / {total_fmt:3s} [{elapsed:5s} < {remaining:5s}]"
 result = {}
 filename = args.output
-
+field_delim = ","
+if args.field_delimiter and len(args.field_delimiter) == 1:
+    field_delim = args.field_delimiter
 
 def random_headers():
     return {'User-Agent': choice(desktop_agents),
@@ -784,20 +803,54 @@ def deeplink(searchstr):
             progress_bar.close()
 
 
+def get_domain_from_url(link):
+    fqdn_re = r"^[a-z][a-z0-9+\-.]*://([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])"
+    domain_re = re.match(fqdn_re, link)
+    if domain_re is not None:
+        if domain_re.lastindex == 2:
+            return domain_re.group(2)
+    return None
+
+
+def write_to_csv(csv_writer, fields):
+    line_to_write = []
+    if args.fields and len(args.fields) > 0:
+        for f in args.fields[0]:
+            if f in fields:
+                line_to_write.append(fields[f])
+            if f == "domain":
+                domain = get_domain_from_url(fields['link'])
+                line_to_write.append(domain)
+        csv_writer.writerow(line_to_write)
+    else:
+        # Default output mode
+        line_to_write.append(fields['engine'])
+        line_to_write.append(fields['name'])
+        line_to_write.append(fields['link'])
+        csv_writer.writerow(line_to_write)
+
+
 def link_finder(engine_str, data_obj):
     global result
     global filename
     name = ""
     link = ""
-    f = None
+    csv_file = None
+    has_result = False
 
     if args.continuous_write:
-        f = open(filename, "a")
+        csv_file = open(filename, 'a', newline='')
 
     def append_link():
+        nonlocal has_result
+        has_result = True
+
         result[engine_str].append({"name": name, "link": link})
-        if args.continuous_write and f.writable():
-            f.write("\"{}\",\"{}\",\"{}\"\n".format(engine_str, name, link))
+
+        if args.continuous_write and csv_file.writable():
+            csv_writer = csv.writer(csv_file, delimiter=field_delim, quoting=csv.QUOTE_NONNUMERIC)
+            fields = {"engine": engine_str, "name": name, "link": link}
+            write_to_csv(csv_writer, fields)
 
     if engine_str not in result:
         result[engine_str] = []
@@ -811,11 +864,13 @@ def link_finder(engine_str, data_obj):
             append_link()
 
     if engine_str == "candle":
-        for i in data_obj.find('html').find_all('a'):
-            if str(i['href']).startswith("http"):
-                name = clear(i.get_text())
-                link = clear(i['href'])
-                append_link()
+        html_page = data_obj.find('html')
+        if html_page:
+            for i in data_obj.find('html').find_all('a'):
+                if str(i['href']).startswith("http"):
+                    name = clear(i.get_text())
+                    link = clear(i['href'])
+                    append_link()
 
     if engine_str == "darksearchenginer":
         for i in data_obj.find('div', attrs={"class": "table-responsive"}).find_all('a'):
@@ -975,10 +1030,10 @@ def link_finder(engine_str, data_obj):
                 link = n.find('a')['href']
                 append_link()
 
-    if args.continuous_write and not f.closed:
-        f.close()
+    if args.continuous_write and not csv_file.closed:
+        csv_file.close()
 
-    if len(result[engine_str]) <= 0:
+    if not has_result:
         return -1
 
     return 1
@@ -991,13 +1046,6 @@ def call_func_as_str(function_name, function_arg):
         print("Error: unable to connect")
     except OSError:
         print("Error: unable to connect")
-
-
-def write_to_file(filename, results, engine):
-    f = open(filename, "w+")
-    for i in results[engine]:
-        f.write("\"{}\",\"{}\",\"{}\"\n".format(engine, i["name"], i["link"]))
-    f.close()
 
 
 def scrape():
@@ -1029,11 +1077,12 @@ def scrape():
     stop_time = datetime.now()
 
     if not args.continuous_write:
-        f = open(filename, "w+")
-        for engine in result.keys():
-            for i in result[engine]:
-                f.write("\"{}\",\"{}\",\"{}\"\n".format(engine, i["name"], i["link"]))
-        f.close()
+        with open(filename, 'w', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file, delimiter=field_delim, quoting=csv.QUOTE_NONNUMERIC)
+            for engine in result.keys():
+                for i in result[engine]:
+                    i['engine'] = engine
+                    write_to_csv(csv_writer, i)
 
     total = 0
     print("\nReport:")
