@@ -19,10 +19,10 @@ In 30 minutes you get thousands of unique urls.
 - Dark Search Enginer
 - Phobos
 - Onion Search Server
-- Grams
+- Grams (x2)
 - Candle
-- Tor Search Engine
-- Torgle
+- Tor Search Engine (x2)
+- Torgle (x2)
 - Onion Search Engine
 - Tordex
 - Tor66
