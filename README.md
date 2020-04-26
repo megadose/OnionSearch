@@ -11,7 +11,7 @@ In 30 minutes you get thousands of unique urls.
    
 ## 📚 Currently supported Search engines
 - Ahmia
-- TORCH
+- TORCH (x2)
 - Darksearch io
 - OnionLand
 - not Evil

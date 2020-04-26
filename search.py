@@ -146,6 +146,18 @@ def torch(searchstr):
             progress_bar.close()
 
 
+def torch1(searchstr):
+    torch1_url = supported_engines['torch1'] + "/search?q={}&cmd=Search!"
+
+    with tqdm(total=1, initial=0, desc="%20s" % "TORCH", unit="req", ascii=False, ncols=120,
+              bar_format=tqdm_bar_format) as progress_bar:
+        response = requests.get(torch1_url.format(quote(searchstr)), proxies=proxies, headers=random_headers())
+        soup = BeautifulSoup(response.text, 'html5lib')
+        link_finder("torch1", soup)
+        progress_bar.update()
+        progress_bar.close()
+
+
 def darksearchio(searchstr):
     global result
     result['darksearchio'] = []
@@ -1051,6 +1063,12 @@ def link_finder(engine_str, data_obj):
                 append_link()
 
     if engine_str == "torch":
+        for r in data_obj.select("dl > dt > a"):
+            name = clear(r.get_text())
+            link = clear(r['href'])
+            append_link()
+
+    if engine_str == "torch1":
         for r in data_obj.select("dl > dt > a"):
             name = clear(r.get_text())
             link = clear(r['href'])
