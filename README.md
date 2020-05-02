@@ -49,10 +49,10 @@ Help:
 ```
 usage: search.py [-h] [--proxy PROXY] [--output OUTPUT]
                  [--continuous_write CONTINUOUS_WRITE] [--limit LIMIT]
-                 [--barmode BARMODE] [--engines [ENGINES [ENGINES ...]]]
+                 [--engines [ENGINES [ENGINES ...]]]
                  [--exclude [EXCLUDE [EXCLUDE ...]]]
                  [--fields [FIELDS [FIELDS ...]]]
-                 [--field_delimiter FIELD_DELIMITER]
+                 [--field_delimiter FIELD_DELIMITER] [--mp_units MP_UNITS]
                  search
 
 positional arguments:
@@ -65,7 +65,6 @@ optional arguments:
   --continuous_write CONTINUOUS_WRITE
                         Write progressively to output file (default: False)
   --limit LIMIT         Set a max number of pages per engine to load
-  --barmode BARMODE     Can be 'fixed' (default) or 'unknown'
   --engines [ENGINES [ENGINES ...]]
                         Engines to request (default: full list)
   --exclude [EXCLUDE [EXCLUDE ...]]
@@ -74,9 +73,22 @@ optional arguments:
                         Fields to output to csv file (default: engine name link), available fields are shown below
   --field_delimiter FIELD_DELIMITER
                         Delimiter for the CSV fields
+  --mp_units MP_UNITS   Number of processing units (default: core number minus 1)
 
 [...]
 ```
+
+### Multi-processing behaviour
+
+By default, the script will run with the parameter `mp_units = cpu_count() - 1`. It means if you have a machine with 4 cores,
+it will run 3 scraping functions in parallel. You can force `mp_units` to any value but it is recommended to leave to default.
+You may want to set it to 1 to run all requests sequentially (disabling multi-processing feature).
+
+Please note that continuous writing to csv file has not been *heavily* tested with multiprocessing feature and therefore
+may not work as expected.
+
+Please also note that the progress bars may not be properly displayed when `mp_units` is greater than 1.
+**It does not affect the results**, so don't worry.
 
 ### Examples
 
@@ -152,9 +164,9 @@ In the csv file produced, the name and url strings are sanitized as much as poss
 #### Write progressively
 
 You can choose to progressively write to the output (instead of everything at the end, which would prevent
-losing the results if something goes wrong). To do so you have to use `--continuous-write True`, just as is:
+losing the results if something goes wrong). To do so you have to use `--continuous_write True`, just as is:
 ```
-python3 search.py "computer" --continuous-write True
+python3 search.py "computer" --continuous_write True
 ```
 You can then use the `tail -f` (tail follow) Unix command to actively watch or monitor the results of the scraping.
 
