@@ -1,5 +1,5 @@
 # OnionSearch 
-# This new version is made by Gobarigo [https://github.com/Gobarigo] so many thanks to him!
+# This new version is made by [Gobarigo](https://github.com/Gobarigo) so many thanks to him!
 ## Educational purposes only
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
