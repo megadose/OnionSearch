@@ -4,13 +4,10 @@
 
 OnionSearch is a Python3 script that scrapes urls on different ".onion" search engines.
 
-In 30 minutes you get thousands of unique urls.
-
 ## 💡 Prerequisite
 [Python 3](https://www.python.org/download/releases/3.0/)
 
 ## 📚 Currently supported Search engines
-## Modules :
 - ahmia
 - darksearchio
 - onionland
@@ -18,7 +15,7 @@ In 30 minutes you get thousands of unique urls.
 - darksearchenginer
 - phobos
 - onionsearchserver
-- torgle x2
+- torgle
 - onionsearchengine
 - tordex
 - tor66
