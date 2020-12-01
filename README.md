@@ -5,7 +5,7 @@
 
 OnionSearch is a Python3 script that scrapes urls on different ".onion" search engines.
 
-![](https://files.catbox.moe/52297s.png)
+![](https://files.catbox.moe/vguy1e.png)
 
 ### Demo
 
