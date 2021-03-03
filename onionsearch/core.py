@@ -893,8 +893,8 @@ def run_method(method_name_and_argument):
     ret = []
     try:
         ret = globals()[method_name](argument)
-    except:
-        print("Error: unable to connect")
+    except Exception as e:
+        print(f'Exception occured: {e}')
     return ret
 
 
