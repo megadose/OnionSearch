@@ -7,7 +7,7 @@ setup(
     version="1",
     packages=find_packages(),
     author="megadose",
-    install_requires=["requests","argparse","termcolor","tqdm", "html5lib","bs4"],
+    install_requires=["requests","argparse","termcolor","tqdm", "html5lib","bs4","PySocks"],
     description="OnionSearch is a script that scrapes urls on different .onion search engines.",
     include_package_data=True,
     url='http://github.com/megadose/OnionSearch',
