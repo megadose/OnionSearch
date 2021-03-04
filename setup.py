@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='onionsearch',
-    version="1",
+    version="1.1",
     packages=find_packages(),
     author="megadose",
     install_requires=["requests","argparse","termcolor","tqdm", "html5lib","bs4","PySocks"],
