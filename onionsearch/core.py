@@ -78,7 +78,7 @@ def print_epilog():
 
 
 parser = argparse.ArgumentParser(epilog=print_epilog(), formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument("--proxy", default='localhost:9150', type=str, help="Set Tor proxy (default: 127.0.0.1:9150)")
+parser.add_argument("--proxy", default='localhost:9050', type=str, help="Set Tor proxy (default: 127.0.0.1:9050)")
 parser.add_argument("--output", default='output_$SEARCH_$DATE.txt', type=str,
                     help="Output File (default: output_$SEARCH_$DATE.txt), where $SEARCH is replaced by the first "
                          "chars of the search string and $DATE is replaced by the datetime")
