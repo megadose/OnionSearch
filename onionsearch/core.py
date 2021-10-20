@@ -930,7 +930,7 @@ def scrape():
     # Doing multiprocessing
     if args.mp_units and args.mp_units > 0:
         units = args.mp_units
-    else
+    else:
         # Use (cores count - 1), but not less then one, threads
         units = max((cpu_count() - 1), 1)
     print("search.py started with {} processing units...".format(units))
