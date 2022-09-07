@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 from urllib3.exceptions import ProtocolError
 
 ENGINES = {
-    "ahmia": "http://msydqstlz2kzerdg.onion",  # Offline?
+    "ahmia": "http://juhanurmihxlp77nkq76byazcldy2hlmovfu2epvl5ankdibsot4csyd.onion",  # Offline?
     "darksearchio": "http://darksearch.io",
     "onionland": "http://3bbad7fauom4d6sgppalyqddsqbf5u5p56b5k5uk2zxsy3d6ey2jobad.onion",
     "notevil": "http://hss3uro2hsxfogfq.onion",  # Offline?
