@@ -1,81 +1,35 @@
 #!/usr/bin/python3
+import constants
 
 import argparse
 import csv
 import math
 import re
 import time
+import urllib.parse as urlparse
 from datetime import datetime
 from functools import reduce
-from random import choice
 from multiprocessing import Pool, cpu_count, current_process, freeze_support
-from tqdm import tqdm
-
-import requests
-import urllib.parse as urlparse
+from random import choice
 from urllib.parse import parse_qs
 from urllib.parse import quote
 from urllib.parse import unquote
+
+import requests
 from bs4 import BeautifulSoup
-from urllib3.exceptions import ProtocolError
+from tqdm import tqdm
 
-ENGINES = {
-    "ahmia": "http://juhanurmihxlp77nkq76byazcldy2hlmovfu2epvl5ankdibsot4csyd.onion",  # Offline?
-    "darksearchio": "http://darksearch.io",
-    "onionland": "http://3bbad7fauom4d6sgppalyqddsqbf5u5p56b5k5uk2zxsy3d6ey2jobad.onion",
-    "notevil": "http://hss3uro2hsxfogfq.onion",  # Offline?
-    "darksearchenginer": "http://l4rsciqnpzdndt2llgjx3luvnxip7vbyj6k6nmdy4xs77tx6gkd24ead.onion",
-    "phobos": "http://phobosxilamwcg75xt22id7aywkzol6q6rfl2flipcqoc4e4ahima5id.onion",
-    "onionsearchserver": "http://3fzh7yuupdfyjhwt3ugzqqof6ulbcl27ecev33knxe3u7goi3vfn2qqd.onion",
-    "torgle": "http://no6m4wzdexe3auiupv2zwif7rm6qwxcyhslkcnzisxgeiw6pvjsgafad.onion",  # "torgle" -> "Submarine"
-    "torgle1": "http://torgle5fj664v7pf.onion",  # Offline?
-    "onionsearchengine": "http://onionf4j3fwqpeo5.onion",  # Offline?
-    "tordex": "http://tordex7iie7z2wcg.onion",  # Offline?
-    "tor66": "http://tor66sewebgixwhcqfnp5inzp5x5uohhdy3kvtnyfxc2e5mxiuh34iid.onion",
-    "tormax": "http://tormaxunodsbvtgo.onion",  # Offline?
-    "haystack": "http://haystak5njsmn2hqkewecpaxetahtwhsbsa64jom2k22z5afxhnpxfid.onion",
-    "multivac": "http://multivacigqzqqon.onion",  # Offline?
-    "evosearch": "http://evo7no6twwwrm63c.onion",  # Offline?
-    "deeplink": "http://deeplinkdeatbml7.onion",  # Offline?
-}
-
-desktop_agents = [
-    'Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0',  # Tor Browser for Windows and Linux
-    'Mozilla/5.0 (Android 10; Mobile; rv:91.0) Gecko/91.0 Firefox/91.0',  # Tor Browser for Android
-    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) '
-    'AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14',
-    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0'
-]
-
-supported_engines = ENGINES
-
-available_csv_fields = [
-    "engine",
-    "name",
-    "link",
-    "domain"
-]
+supported_engines = constants.ENGINES
 
 
 def print_epilog():
     epilog = "Available CSV fields: \n\t"
-    for f in available_csv_fields:
-        epilog += " {}".format(f)
+    for f in constants.available_csv_fields:
+        epilog += f" {f}"
     epilog += "\n"
     epilog += "Supported engines: \n\t"
     for e in supported_engines.keys():
-        epilog += " {}".format(e)
+        epilog += f" {e}"
     return epilog
 
 
@@ -98,7 +52,10 @@ parser.add_argument("--mp_units", type=int, default=(cpu_count() - 1), help="Num
                                                                             "core number minus 1)")
 
 args = parser.parse_args()
-proxies = {'http': 'socks5h://{}'.format(args.proxy), 'https': 'socks5h://{}'.format(args.proxy)}
+proxies = {
+    'http': f'socks5h://{args.proxy}',
+    'https': f'socks5h://{args.proxy}',
+}
 filename = args.output
 field_delim = ","
 if args.field_delimiter and len(args.field_delimiter) == 1:
@@ -106,11 +63,11 @@ if args.field_delimiter and len(args.field_delimiter) == 1:
 
 
 def random_headers():
-    return {'User-Agent': choice(desktop_agents),
+    return {'User-Agent': choice(constants.desktop_agents),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
 
 
-def clear(toclear):
+def clear(toclear):  # sourcery skip: avoid-builtin-shadowing
     str = toclear.replace("\n", " ")
     str = ' '.join(str.split())
     return str
@@ -143,30 +100,21 @@ def ahmia(searchstr):
     return results
 
 
-
-
 def darksearchio(searchstr):
     results = []
     darksearchio_url = supported_engines['darksearchio'] + "/api/search?query={}&page={}"
-    max_nb_page = 30
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 30
     with requests.Session() as s:
         s.proxies = proxies
         s.headers = random_headers()
         resp = s.get(darksearchio_url.format(quote(searchstr), 1))
 
-        page_number = 1
-        if resp.status_code == 200:
-            resp = resp.json()
-            if 'last_page' in resp:
-                page_number = resp['last_page']
-            if page_number > max_nb_page:
-                page_number = max_nb_page
-        else:
+        if resp.status_code != 200:
             return
 
+        resp = resp.json()
+        page_number = resp['last_page'] if 'last_page' in resp else 1
+        page_number = min(page_number, max_nb_page)
         pos = get_proc_pos()
         with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("DarkSearch (.io)", pos), position=pos) \
                 as progress_bar:
@@ -190,54 +138,53 @@ def darksearchio(searchstr):
 def onionland(searchstr):
     results = []
     onionlandv3_url = supported_engines['onionland'] + "/search?q={}&page={}"
-    max_nb_page = 100
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 100
     with requests.Session() as s:
-        s.proxies = proxies
-        s.headers = random_headers()
+        results = _extracted_from_onionland_9(
+            s, onionlandv3_url, searchstr, max_nb_page
+        )
+    return results
 
-        resp = s.get(onionlandv3_url.format(quote(searchstr), 1))
-        soup = BeautifulSoup(resp.text, 'html5lib')
 
-        page_number = 1
-        for i in soup.find_all('div', attrs={"class": "search-status"}):
-            approx_re = re.match(r"About ([,0-9]+) result(.*)",
-                                 clear(i.find('div', attrs={'class': "col-sm-12"}).get_text()))
-            if approx_re is not None:
-                nb_res = int((approx_re.group(1)).replace(",", ""))
-                results_per_page = 19
-                page_number = math.ceil(nb_res / results_per_page)
-                if page_number > max_nb_page:
-                    page_number = max_nb_page
+# TODO Rename this here and in `onionland`
+def _extracted_from_onionland_9(s, onionlandv3_url, searchstr, max_nb_page):
+    s.proxies = proxies
+    s.headers = random_headers()
 
-        pos = get_proc_pos()
-        with tqdm(total=max_nb_page, initial=0, desc=get_tqdm_desc("OnionLand", pos), position=pos) as progress_bar:
+    resp = s.get(onionlandv3_url.format(quote(searchstr), 1))
+    soup = BeautifulSoup(resp.text, 'html5lib')
 
-            results = link_finder("onionland", soup)
+    page_number = 1
+    for i in soup.find_all('div', attrs={"class": "search-status"}):
+        approx_re = re.match(r"About ([,0-9]+) result(.*)",
+                             clear(i.find('div', attrs={'class': "col-sm-12"}).get_text()))
+        if approx_re is not None:
+            nb_res = int((approx_re.group(1)).replace(",", ""))
+            page_number = math.ceil(nb_res / 19)
+            page_number = min(page_number, max_nb_page)
+    pos = get_proc_pos()
+    with tqdm(total=max_nb_page, initial=0, desc=get_tqdm_desc("OnionLand", pos), position=pos) as progress_bar:
+
+        result = link_finder("onionland", soup)
+        progress_bar.update()
+
+        for n in range(2, page_number + 1):
+            resp = s.get(onionlandv3_url.format(quote(searchstr), n))
+            soup = BeautifulSoup(resp.text, 'html5lib')
+            ret = link_finder("onionland", soup)
+            if len(ret) == 0:
+                break
+            result = result + ret
             progress_bar.update()
 
-            for n in range(2, page_number + 1):
-                resp = s.get(onionlandv3_url.format(quote(searchstr), n))
-                soup = BeautifulSoup(resp.text, 'html5lib')
-                ret = link_finder("onionland", soup)
-                if len(ret) == 0:
-                    break
-                results = results + ret
-                progress_bar.update()
-
-    return results
+    return result
 
 
 def notevil(searchstr):
     results = []
     notevil_url1 = supported_engines['notevil'] + "/index.php?q={}"
     notevil_url2 = supported_engines['notevil'] + "/index.php?q={}&hostLimit=20&start={}&numRows={}&template=0"
-    max_nb_page = 20
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 20
     # Do not use requests.Session() here (by experience less results would be got)
     req = requests.get(notevil_url1.format(quote(searchstr)), proxies=proxies, headers=random_headers())
     soup = BeautifulSoup(req.text, 'html5lib')
@@ -247,9 +194,7 @@ def notevil(searchstr):
     if last_div is not None:
         for i in last_div.find_all("a"):
             page_number = int(i.get_text())
-        if page_number > max_nb_page:
-            page_number = max_nb_page
-
+        page_number = min(page_number, max_nb_page)
     pos = get_proc_pos()
     with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("not Evil", pos), position=pos) as progress_bar:
         num_rows = 20
@@ -269,14 +214,10 @@ def notevil(searchstr):
     return results
 
 
-
-
 def darksearchenginer(searchstr):
     results = []
     darksearchenginer_url = supported_engines['darksearchenginer']
-    max_nb_page = 20
-    if args.limit != 0:
-        max_nb_page = args.limit
+    max_nb_page = args.limit if args.limit != 0 else 20
     page_number = 1
 
     with requests.Session() as s:
@@ -290,9 +231,7 @@ def darksearchenginer(searchstr):
         pages_input = soup.find_all("input", attrs={"name": "page"})
         for i in pages_input:
             page_number = int(i['value'])
-            if page_number > max_nb_page:
-                page_number = max_nb_page
-
+            page_number = min(page_number, max_nb_page)
         pos = get_proc_pos()
         with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Dark Search Enginer", pos), position=pos) \
                 as progress_bar:
@@ -312,37 +251,38 @@ def darksearchenginer(searchstr):
 def phobos(searchstr):
     results = []
     phobos_url = supported_engines['phobos'] + "/search?query={}&p={}"
-    max_nb_page = 100
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 100
     with requests.Session() as s:
-        s.proxies = proxies
-        s.headers = random_headers()
+        results = _extracted_from_phobos_(s, phobos_url, searchstr, max_nb_page)
+    return results
 
-        resp = s.get(phobos_url.format(quote(searchstr), 1), proxies=proxies, headers=random_headers())
-        soup = BeautifulSoup(resp.text, 'html5lib')
 
-        page_number = 1
-        pages = soup.find("div", attrs={"class": "pages"}).find_all('a')
-        if pages is not None:
-            for i in pages:
-                page_number = int(i.get_text())
-            if page_number > max_nb_page:
-                page_number = max_nb_page
+# TODO Rename this here and in `phobos`
+def _extracted_from_phobos_(s, phobos_url, searchstr, max_nb_page):
+    s.proxies = proxies
+    s.headers = random_headers()
 
-        pos = get_proc_pos()
-        with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Phobos", pos), position=pos) as progress_bar:
-            results = link_finder("phobos", soup)
+    resp = s.get(phobos_url.format(quote(searchstr), 1), proxies=proxies, headers=random_headers())
+    soup = BeautifulSoup(resp.text, 'html5lib')
+
+    page_number = 1
+    pages = soup.find("div", attrs={"class": "pages"}).find_all('a')
+    if pages is not None:
+        for i in pages:
+            page_number = int(i.get_text())
+        page_number = min(page_number, max_nb_page)
+    pos = get_proc_pos()
+    with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Phobos", pos), position=pos) as progress_bar:
+        result = link_finder("phobos", soup)
+        progress_bar.update()
+
+        for n in range(2, page_number + 1):
+            resp = s.get(phobos_url.format(quote(searchstr), n), proxies=proxies, headers=random_headers())
+            soup = BeautifulSoup(resp.text, 'html5lib')
+            result = result + link_finder("phobos", soup)
             progress_bar.update()
 
-            for n in range(2, page_number + 1):
-                resp = s.get(phobos_url.format(quote(searchstr), n), proxies=proxies, headers=random_headers())
-                soup = BeautifulSoup(resp.text, 'html5lib')
-                results = results + link_finder("phobos", soup)
-                progress_bar.update()
-
-    return results
+    return result
 
 
 def onionsearchserver(searchstr):
@@ -350,10 +290,7 @@ def onionsearchserver(searchstr):
     onionsearchserver_url1 = supported_engines['onionsearchserver'] + "/oss/"
     onionsearchserver_url2 = None
     results_per_page = 10
-    max_nb_page = 100
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 100
     with requests.Session() as s:
         s.proxies = proxies
         s.headers = random_headers()
@@ -374,9 +311,7 @@ def onionsearchserver(searchstr):
         if pages is not None and not str(pages[0].get_text()).startswith("No"):
             total_results = float(str.split(clear(pages[0].get_text()))[0])
             page_number = math.ceil(total_results / results_per_page)
-            if page_number > max_nb_page:
-                page_number = max_nb_page
-
+            page_number = min(page_number, max_nb_page)
         pos = get_proc_pos()
         with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Onion Search Server", pos), position=pos) \
                 as progress_bar:
@@ -391,7 +326,6 @@ def onionsearchserver(searchstr):
                 progress_bar.update()
 
     return results
-
 
 
 def torgle(searchstr):
@@ -411,117 +345,119 @@ def torgle(searchstr):
 def onionsearchengine(searchstr):
     results = []
     onionsearchengine_url = supported_engines['onionsearchengine'] + "/search.php?search={}&submit=Search&page={}"
-    # same as onionsearchengine_url = "http://5u56fjmxu63xcmbk.onion/search.php?search={}&submit=Search&page={}"
-    max_nb_page = 100
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 100
     with requests.Session() as s:
-        s.proxies = proxies
-        s.headers = random_headers()
+        results = _extracted_from_onionsearchengine_10(
+            s, onionsearchengine_url, searchstr, max_nb_page
+        )
+    return results
 
-        resp = s.get(onionsearchengine_url.format(quote(searchstr), 1))
-        soup = BeautifulSoup(resp.text, 'html5lib')
 
-        page_number = 1
-        approx_re = re.search(r"\s([0-9]+)\sresult[s]?\sfound\s!.*", clear(soup.find('body').get_text()))
-        if approx_re is not None:
-            nb_res = int(approx_re.group(1))
-            results_per_page = 9
-            page_number = math.ceil(float(nb_res / results_per_page))
-            if page_number > max_nb_page:
-                page_number = max_nb_page
+# TODO Rename this here and in `onionsearchengine`
+def _extracted_from_onionsearchengine_10(s, onionsearchengine_url, searchstr, max_nb_page):
+    s.proxies = proxies
+    s.headers = random_headers()
 
-        pos = get_proc_pos()
-        with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Onion Search Engine", pos), position=pos) \
-                as progress_bar:
+    resp = s.get(onionsearchengine_url.format(quote(searchstr), 1))
+    soup = BeautifulSoup(resp.text, 'html5lib')
 
-            results = link_finder("onionsearchengine", soup)
+    page_number = 1
+    approx_re = re.search(r"\s([0-9]+)\sresult[s]?\sfound\s!.*", clear(soup.find('body').get_text()))
+    if approx_re is not None:
+        nb_res = int(approx_re[1])
+        page_number = math.ceil(float(nb_res / 9))
+        page_number = min(page_number, max_nb_page)
+    pos = get_proc_pos()
+    with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Onion Search Engine", pos), position=pos) \
+            as progress_bar:
+
+        result = link_finder("onionsearchengine", soup)
+        progress_bar.update()
+
+        for n in range(2, page_number + 1):
+            resp = s.get(onionsearchengine_url.format(quote(searchstr), n))
+            soup = BeautifulSoup(resp.text, 'html5lib')
+            result = result + link_finder("onionsearchengine", soup)
             progress_bar.update()
 
-            for n in range(2, page_number + 1):
-                resp = s.get(onionsearchengine_url.format(quote(searchstr), n))
-                soup = BeautifulSoup(resp.text, 'html5lib')
-                results = results + link_finder("onionsearchengine", soup)
-                progress_bar.update()
-
-    return results
+    return result
 
 
 def tordex(searchstr):
     results = []
     tordex_url = supported_engines['tordex'] + "/search?query={}&page={}"
-    max_nb_page = 100
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 100
     with requests.Session() as s:
-        s.proxies = proxies
-        s.headers = random_headers()
+        results = _extracted_from_tordex_(s, tordex_url, searchstr, max_nb_page)
+    return results
 
-        resp = s.get(tordex_url.format(quote(searchstr), 1))
-        soup = BeautifulSoup(resp.text, 'html5lib')
 
-        page_number = 1
-        pages = soup.find_all("li", attrs={"class": "page-item"})
-        if pages is not None:
-            for i in pages:
-                if i.get_text() != "...":
-                    page_number = int(i.get_text())
-            if page_number > max_nb_page:
-                page_number = max_nb_page
+# TODO Rename this here and in `tordex`
+def _extracted_from_tordex_(s, tordex_url, searchstr, max_nb_page):
+    s.proxies = proxies
+    s.headers = random_headers()
 
-        pos = get_proc_pos()
-        with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Tordex", pos), position=pos) as progress_bar:
+    resp = s.get(tordex_url.format(quote(searchstr), 1))
+    soup = BeautifulSoup(resp.text, 'html5lib')
 
-            results = link_finder("tordex", soup)
+    page_number = 1
+    pages = soup.find_all("li", attrs={"class": "page-item"})
+    if pages is not None:
+        for i in pages:
+            if i.get_text() != "...":
+                page_number = int(i.get_text())
+        page_number = min(page_number, max_nb_page)
+    pos = get_proc_pos()
+    with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Tordex", pos), position=pos) as progress_bar:
+
+        result = link_finder("tordex", soup)
+        progress_bar.update()
+
+        for n in range(2, page_number + 1):
+            resp = s.get(tordex_url.format(quote(searchstr), n))
+            soup = BeautifulSoup(resp.text, 'html5lib')
+            result = result + link_finder("tordex", soup)
             progress_bar.update()
 
-            for n in range(2, page_number + 1):
-                resp = s.get(tordex_url.format(quote(searchstr), n))
-                soup = BeautifulSoup(resp.text, 'html5lib')
-                results = results + link_finder("tordex", soup)
-                progress_bar.update()
-
-    return results
+    return result
 
 
 def tor66(searchstr):
     results = []
     tor66_url = supported_engines['tor66'] + "/search?q={}&sorttype=rel&page={}"
-    max_nb_page = 30
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 30
     with requests.Session() as s:
-        s.proxies = proxies
-        s.headers = random_headers()
+        results = _extracted_from_tor66_9(s, tor66_url, searchstr, max_nb_page)
+    return results
 
-        resp = s.get(tor66_url.format(quote(searchstr), 1))
-        soup = BeautifulSoup(resp.text, 'html5lib')
 
-        page_number = 1
-        approx_re = re.search(r"\.Onion\ssites\sfound\s:\s([0-9]+)", resp.text)
-        if approx_re is not None:
-            nb_res = int(approx_re.group(1))
-            results_per_page = 20
-            page_number = math.ceil(float(nb_res / results_per_page))
-            if page_number > max_nb_page:
-                page_number = max_nb_page
+# TODO Rename this here and in `tor66`
+def _extracted_from_tor66_9(s, tor66_url, searchstr, max_nb_page):
+    s.proxies = proxies
+    s.headers = random_headers()
 
-        pos = get_proc_pos()
-        with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Tor66", pos), position=pos) as progress_bar:
+    resp = s.get(tor66_url.format(quote(searchstr), 1))
+    soup = BeautifulSoup(resp.text, 'html5lib')
 
-            results = link_finder("tor66", soup)
+    page_number = 1
+    approx_re = re.search(r"\.Onion\ssites\sfound\s:\s([0-9]+)", resp.text)
+    if approx_re is not None:
+        nb_res = int(approx_re.group(1))
+        page_number = math.ceil(float(nb_res / 20))
+        page_number = min(page_number, max_nb_page)
+    pos = get_proc_pos()
+    with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Tor66", pos), position=pos) as progress_bar:
+
+        result = link_finder("tor66", soup)
+        progress_bar.update()
+
+        for n in range(2, page_number + 1):
+            resp = s.get(tor66_url.format(quote(searchstr), n))
+            soup = BeautifulSoup(resp.text, 'html5lib')
+            result = result + link_finder("tor66", soup)
             progress_bar.update()
 
-            for n in range(2, page_number + 1):
-                resp = s.get(tor66_url.format(quote(searchstr), n))
-                soup = BeautifulSoup(resp.text, 'html5lib')
-                results = results + link_finder("tor66", soup)
-                progress_bar.update()
-
-    return results
+    return result
 
 
 def tormax(searchstr):
@@ -541,10 +477,7 @@ def tormax(searchstr):
 def haystack(searchstr):
     results = []
     haystack_url = supported_engines['haystack'] + "/?q={}&offset={}"
-    # At the 52nd page, it timeouts 100% of the time
-    max_nb_page = 50
-    if args.limit != 0:
-        max_nb_page = args.limit
+    max_nb_page = args.limit if args.limit != 0 else 50
     offset_coeff = 20
 
     with requests.Session() as s:
@@ -556,13 +489,10 @@ def haystack(searchstr):
 
         pos = get_proc_pos()
         with tqdm(total=max_nb_page, initial=0, desc=get_tqdm_desc("Haystack", pos), position=pos) as progress_bar:
-            continue_processing = True
             ret = link_finder("haystack", soup)
-            results = results + ret
+            results += ret
             progress_bar.update()
-            if len(ret) == 0:
-                continue_processing = False
-
+            continue_processing = len(ret) != 0
             it = 1
             while continue_processing:
                 offset = int(it * offset_coeff)
@@ -581,10 +511,7 @@ def haystack(searchstr):
 def multivac(searchstr):
     results = []
     multivac_url = supported_engines['multivac'] + "/?q={}&page={}"
-    max_nb_page = 10
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 10
     with requests.Session() as s:
         s.proxies = proxies
         s.headers = random_headers()
@@ -595,13 +522,10 @@ def multivac(searchstr):
 
         pos = get_proc_pos()
         with tqdm(total=max_nb_page, initial=0, desc=get_tqdm_desc("Multivac", pos), position=pos) as progress_bar:
-            continue_processing = True
             ret = link_finder("multivac", soup)
-            results = results + ret
+            results += ret
             progress_bar.update()
-            if len(ret) == 0 or page_to_request >= max_nb_page:
-                continue_processing = False
-
+            continue_processing = len(ret) != 0 and page_to_request < max_nb_page
             while continue_processing:
                 page_to_request += 1
                 req = s.get(multivac_url.format(quote(searchstr), page_to_request))
@@ -623,10 +547,7 @@ def evosearch(searchstr):
                                                      "search=1&type=and&mark=bold+text&" \
                                                      "results={}"
     results_per_page = 50
-    max_nb_page = 30
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 30
     with requests.Session() as s:
         s.proxies = proxies
         s.headers = random_headers()
@@ -636,13 +557,10 @@ def evosearch(searchstr):
 
         page_number = 1
         i = soup.find("p", attrs={"class": "cntr"})
-        if i is not None:
-            if i.get_text() is not None and "of" in i.get_text():
-                nb_res = float(clear(str.split(i.get_text().split("-")[1].split("of")[1])[0]))
-                page_number = math.ceil(nb_res / results_per_page)
-                if page_number > max_nb_page:
-                    page_number = max_nb_page
-
+        if i is not None and (i.get_text() is not None and "of" in i.get_text()):
+            nb_res = float(clear(str.split(i.get_text().split("-")[1].split("of")[1])[0]))
+            page_number = math.ceil(nb_res / results_per_page)
+            page_number = min(page_number, max_nb_page)
         pos = get_proc_pos()
         with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Evo Search", pos), position=pos) as progress_bar:
             results = link_finder("evosearch", soup)
@@ -655,7 +573,6 @@ def evosearch(searchstr):
                 progress_bar.update()
 
     return results
-
 
 
 def deeplink(searchstr):
@@ -678,15 +595,11 @@ def deeplink(searchstr):
     return results
 
 
-
 def torgle1(searchstr):
     results = []
     torgle1_url = supported_engines['torgle1'] + "/torgle/index-frame.php?query={}&search=1&engine-ver=2&isframe=0{}"
     results_per_page = 10
-    max_nb_page = 30
-    if args.limit != 0:
-        max_nb_page = args.limit
-
+    max_nb_page = args.limit if args.limit != 0 else 30
     with requests.Session() as s:
         s.proxies = proxies
         s.headers = random_headers()
@@ -696,21 +609,18 @@ def torgle1(searchstr):
 
         page_number = 1
         i = soup.find('div', attrs={"id": "result_report"})
-        if i is not None:
-            if i.get_text() is not None and "of" in i.get_text():
-                res_re = re.match(r".*of\s([0-9]+)\s.*", clear(i.get_text()))
-                total_results = int(res_re.group(1))
-                page_number = math.ceil(total_results / results_per_page)
-                if page_number > max_nb_page:
-                    page_number = max_nb_page
-
+        if i is not None and (i.get_text() is not None and "of" in i.get_text()):
+            res_re = re.match(r".*of\s([0-9]+)\s.*", clear(i.get_text()))
+            total_results = int(res_re[1])
+            page_number = math.ceil(total_results / results_per_page)
+            page_number = min(page_number, max_nb_page)
         pos = get_proc_pos()
         with tqdm(total=page_number, initial=0, desc=get_tqdm_desc("Torgle 1", pos), position=pos) as progress_bar:
             results = link_finder("torgle1", soup)
             progress_bar.update()
 
             for n in range(2, page_number + 1):
-                start_page_param = "&start={}".format(n)
+                start_page_param = f"&start={n}"
                 resp = s.get(torgle1_url.format(quote(searchstr), start_page_param))
                 soup = BeautifulSoup(resp.text, 'html5lib')
                 results = results + link_finder("torgle1", soup)
@@ -719,14 +629,11 @@ def torgle1(searchstr):
     return results
 
 
-
-
 def get_domain_from_url(link):
     fqdn_re = r"^[a-z][a-z0-9+\-.]*://([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])"
     domain_re = re.match(fqdn_re, link)
-    if domain_re is not None:
-        if domain_re.lastindex == 2:
-            return domain_re.group(2)
+    if domain_re is not None and domain_re.lastindex == 2:
+        return domain_re[2]
     return None
 
 
@@ -739,13 +646,10 @@ def write_to_csv(csv_writer, fields):
             if f == "domain":
                 domain = get_domain_from_url(fields['link'])
                 line_to_write.append(domain)
-        csv_writer.writerow(line_to_write)
     else:
-        # Default output mode
-        line_to_write.append(fields['engine'])
-        line_to_write.append(fields['name'])
-        line_to_write.append(fields['link'])
-        csv_writer.writerow(line_to_write)
+        line_to_write.extend((fields['engine'], fields['name'], fields['link']))
+
+    csv_writer.writerow(line_to_write)
 
 
 def link_finder(engine_str, data_obj):
@@ -798,8 +702,6 @@ def link_finder(engine_str, data_obj):
             link = get_parameter(r['href'], 'url')
             add_link()
 
-
-
     if engine_str == "haystack":
         for r in data_obj.select(".result b a"):
             name = clear(r.get_text())
@@ -817,11 +719,10 @@ def link_finder(engine_str, data_obj):
 
     if engine_str == "notevil":
         for r in data_obj.find_all("p"):
-            r=r.find("a")
+            r = r.find("a")
             name = clear(r.get_text())
             link = unquote(r["href"]).split('./r2d.php?url=')[1].split('&')[0]
             add_link()
-
 
     if engine_str == "onionland":
         for r in data_obj.select('.result-block .title a'):
@@ -855,7 +756,6 @@ def link_finder(engine_str, data_obj):
                 link = clear(i.find('a')['href'])
                 add_link()
 
-
     if engine_str == "tordex":
         for r in data_obj.select('.container h5 a'):
             name = clear(r.get_text())
@@ -878,12 +778,10 @@ def link_finder(engine_str, data_obj):
             add_link()
 
     if engine_str == "tormax":
-        for r in data_obj.find_all("section",attrs={"id":"search-results"})[0].find_all("article"):
-            name = clear(r.find('a',attrs={"class":"title"}).get_text())
-            link = clear(r.find('div',attrs={"class":"url"}).get_text())
+        for r in data_obj.find_all("section", attrs={"id": "search-results"})[0].find_all("article"):
+            name = clear(r.find('a', attrs={"class": "title"}).get_text())
+            link = clear(r.find('div', attrs={"class": "url"}).get_text())
             add_link()
-
-
 
     if args.continuous_write and not csv_file.closed:
         csv_file.close()
@@ -911,8 +809,8 @@ def scrape():
     filename = str(filename).replace("$DATE", start_time.strftime("%Y%m%d%H%M%S"))
     search = str(args.search).replace(" ", "")
     if len(search) > 10:
-        search = search[0:9]
-    filename = str(filename).replace("$SEARCH", search)
+        search = search[:9]
+    filename = filename.replace("$SEARCH", search)
 
     func_args = []
     stats_dict = {}
@@ -921,14 +819,14 @@ def scrape():
         for e in eng:
             try:
                 if not (args.exclude and len(args.exclude) > 0 and e in args.exclude[0]):
-                    func_args.append("{}:{}".format(e, args.search))
+                    func_args.append(f"{e}:{args.search}")
                     stats_dict[e] = 0
             except KeyError:
-                print("Error: search engine {} not in the list of supported engines".format(e))
+                print(f"Error: search engine {e} not in the list of supported engines")
     else:
         for e in supported_engines.keys():
             if not (args.exclude and len(args.exclude) > 0 and e in args.exclude[0]):
-                func_args.append("{}:{}".format(e, args.search))
+                func_args.append(f"{e}:{args.search}")
                 stats_dict[e] = 0
 
     # Doing multiprocessing
@@ -937,7 +835,7 @@ def scrape():
     else:
         # Use (cores count - 1), but not less then one, threads
         units = max((cpu_count() - 1), 1)
-    print("search.py started with {} processing units...".format(units))
+    print(f"search.py started with {units} processing units...")
     freeze_support()
 
     results = {}
@@ -955,12 +853,11 @@ def scrape():
 
     total = 0
     print("\nReport:")
-    print("  Execution time: %s seconds" % (stop_time - start_time))
+    print(f"  Execution time: {stop_time - start_time} seconds")
     print("  Results per engine:")
     for r in results:
         stats_dict[r['engine']] += 1
-    for s in stats_dict:
-        n = stats_dict[s]
-        print("    {}: {}".format(s, str(n)))
+    for s, n in stats_dict.items():
+        print(f"    {s}: {str(n)}")
         total += n
-    print("  Total: {} links written to {}".format(str(total), filename))
+    print(f"  Total: {str(total)} links written to {filename}")
