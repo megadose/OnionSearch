@@ -63,22 +63,105 @@ if args.field_delimiter and len(args.field_delimiter) == 1:
 
 
 def random_headers():
+    """
+        Generate a dictionary containing HTTP headers with a random 'User-Agent' and a standard 'Accept' header.
+
+        The 'User-Agent' header is chosen randomly from a predefined list of user agents for desktop browsers,
+        which is expected to be defined in a separate module named 'constants' under the attribute 'desktop_agents'.
+
+        Returns:
+            dict: A dictionary with the following structure:
+                  {
+                      'User-Agent': A random user agent string from 'constants.desktop_agents',
+                      'Accept': A standard accept header string for HTTP requests
+                  }
+
+        Example:
+            >>> random_headers()
+            {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+            }
+        """
     return {'User-Agent': choice(constants.desktop_agents),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
 
 
-def clear(toclear):  # sourcery skip: avoid-builtin-shadowing
-    str = toclear.replace("\n", " ")
-    str = ' '.join(str.split())
-    return str
+def clear(toclear) -> str:
+    """
+        Cleans up a string by replacing newline characters with spaces and
+        collapsing multiple whitespace characters into a single space.
+
+        Parameters:
+            toclear (str): The string to be cleaned.
+
+        Returns:
+            str: The cleaned string with newline characters replaced by spaces
+                 and consecutive whitespace collapsed into single spaces.
+
+        Example:
+            >>> sample_text = "This is a text\\nwith newlines\\n\\n    and irregular spacing."
+            >>> clear(sample_text)
+            'This is a text with newlines and irregular spacing.'
+        """
+    str_cleaned = toclear.replace("\n", " ")
+    str_cleaned = ' '.join(str_cleaned.split())
+    return str_cleaned
 
 
 def get_parameter(url, parameter_name):
+    """
+        Extract the value of a given parameter from the query string of a URL.
+
+        Parameters:
+            url (str): The URL containing the query string.
+            parameter_name (str): The name of the parameter to retrieve the value for.
+
+        Returns:
+            str: The value of the requested parameter.
+
+        Raises:
+            IndexError: If the parameter is not found in the query string, or if it has no values.
+
+        Example:
+            >>> get_parameter("http://example.com?param1=value1&param2=value2", 'param1')
+            'value1'
+            >>> get_parameter("http://example.com?param1=value1&param2=value2", 'param2')
+            'value2'
+
+        Note:
+            The function assumes that the 'urlparse' and 'parse_qs' methods are available from the 'urllib.parse' module,
+            and they need to be imported before calling this function:
+
+            from urllib.parse import urlparse, parse_qs
+        """
     parsed = urlparse.urlparse(url)
     return parse_qs(parsed.query)[parameter_name][0]
 
 
 def get_proc_pos():
+    """
+        Retrieves the zero-based position index of the current process.
+
+        This function assumes that it is being called within a process of a multiprocessing context.
+        It fetches the unique identity of the current process and adjusts it to get a zero-based index
+        by subtracting 1, as the identity is 1-based by default.
+
+        Returns:
+            int: The zero-based index position of the current process.
+
+        Example:
+            # Assuming this function is called within a Process of a multiprocessing Pool
+            >>> from multiprocessing import current_process
+            >>> get_proc_pos()
+            0   # If it's the first process created in the pool
+
+        Note:
+            The function uses 'current_process' from the 'multiprocessing' module, which needs to be
+            imported before calling this function:
+
+            from multiprocessing import current_process
+        """
     return (current_process()._identity[0]) - 1
 
 
