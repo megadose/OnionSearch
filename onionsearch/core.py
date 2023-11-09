@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import constants
 
+import typing
 import argparse
 import csv
 import math
@@ -22,7 +23,7 @@ from tqdm import tqdm
 supported_engines = constants.ENGINES
 
 
-def print_epilog():
+def print_epilog() -> str:
     epilog = "Available CSV fields: \n\t"
     for f in constants.available_csv_fields:
         epilog += f" {f}"
@@ -62,7 +63,7 @@ if args.field_delimiter and len(args.field_delimiter) == 1:
     field_delim = args.field_delimiter
 
 
-def random_headers():
+def random_headers() -> dict:
     """
         Generate a dictionary containing HTTP headers with a random 'User-Agent' and a standard 'Accept' header.
 
@@ -109,7 +110,7 @@ def clear(toclear) -> str:
     return str_cleaned
 
 
-def get_parameter(url, parameter_name):
+def get_parameter(url, parameter_name) -> str:
     """
         Extract the value of a given parameter from the query string of a URL.
 
@@ -139,7 +140,7 @@ def get_parameter(url, parameter_name):
     return parse_qs(parsed.query)[parameter_name][0]
 
 
-def get_proc_pos():
+def get_proc_pos() -> int:
     """
         Retrieves the zero-based position index of the current process.
 
@@ -165,11 +166,11 @@ def get_proc_pos():
     return (current_process()._identity[0]) - 1
 
 
-def get_tqdm_desc(e_name, pos):
+def get_tqdm_desc(e_name, pos) -> str:
     return "%20s (#%d)" % (e_name, pos)
 
 
-def ahmia(searchstr):
+def ahmia(searchstr) -> list:
     results = []
     ahmia_url = supported_engines['ahmia'] + "/search/?q={}"
 
@@ -183,7 +184,7 @@ def ahmia(searchstr):
     return results
 
 
-def darksearchio(searchstr):
+def darksearchio(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     darksearchio_url = supported_engines['darksearchio'] + "/api/search?query={}&page={}"
     max_nb_page = args.limit if args.limit != 0 else 30
@@ -218,7 +219,7 @@ def darksearchio(searchstr):
     return results
 
 
-def onionland(searchstr):
+def onionland(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     onionlandv3_url = supported_engines['onionland'] + "/search?q={}&page={}"
     max_nb_page = args.limit if args.limit != 0 else 100
@@ -230,7 +231,7 @@ def onionland(searchstr):
 
 
 # TODO Rename this here and in `onionland`
-def _extracted_from_onionland_9(s, onionlandv3_url, searchstr, max_nb_page):
+def _extracted_from_onionland_9(s, onionlandv3_url, searchstr, max_nb_page) -> list[typing.Any] | None | typing.Any:
     s.proxies = proxies
     s.headers = random_headers()
 
@@ -242,7 +243,7 @@ def _extracted_from_onionland_9(s, onionlandv3_url, searchstr, max_nb_page):
         approx_re = re.match(r"About ([,0-9]+) result(.*)",
                              clear(i.find('div', attrs={'class': "col-sm-12"}).get_text()))
         if approx_re is not None:
-            nb_res = int((approx_re.group(1)).replace(",", ""))
+            nb_res = int(approx_re[1].replace(",", ""))
             page_number = math.ceil(nb_res / 19)
             page_number = min(page_number, max_nb_page)
     pos = get_proc_pos()
@@ -297,7 +298,7 @@ def notevil(searchstr):
     return results
 
 
-def darksearchenginer(searchstr):
+def darksearchenginer(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     darksearchenginer_url = supported_engines['darksearchenginer']
     max_nb_page = args.limit if args.limit != 0 else 20
@@ -331,7 +332,7 @@ def darksearchenginer(searchstr):
     return results
 
 
-def phobos(searchstr):
+def phobos(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     phobos_url = supported_engines['phobos'] + "/search?query={}&p={}"
     max_nb_page = args.limit if args.limit != 0 else 100
@@ -341,7 +342,7 @@ def phobos(searchstr):
 
 
 # TODO Rename this here and in `phobos`
-def _extracted_from_phobos_(s, phobos_url, searchstr, max_nb_page):
+def _extracted_from_phobos_(s, phobos_url, searchstr, max_nb_page) -> list[typing.Any] | None | typing.Any:
     s.proxies = proxies
     s.headers = random_headers()
 
@@ -368,7 +369,7 @@ def _extracted_from_phobos_(s, phobos_url, searchstr, max_nb_page):
     return result
 
 
-def onionsearchserver(searchstr):
+def onionsearchserver(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     onionsearchserver_url1 = supported_engines['onionsearchserver'] + "/oss/"
     onionsearchserver_url2 = None
@@ -411,7 +412,7 @@ def onionsearchserver(searchstr):
     return results
 
 
-def torgle(searchstr):
+def torgle(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     torgle_url = supported_engines['torgle'] + "/search.php?term={}"
 
@@ -425,7 +426,7 @@ def torgle(searchstr):
     return results
 
 
-def onionsearchengine(searchstr):
+def onionsearchengine(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     onionsearchengine_url = supported_engines['onionsearchengine'] + "/search.php?search={}&submit=Search&page={}"
     max_nb_page = args.limit if args.limit != 0 else 100
@@ -437,7 +438,8 @@ def onionsearchengine(searchstr):
 
 
 # TODO Rename this here and in `onionsearchengine`
-def _extracted_from_onionsearchengine_10(s, onionsearchengine_url, searchstr, max_nb_page):
+def _extracted_from_onionsearchengine_10(s, onionsearchengine_url, searchstr, max_nb_page) -> list[
+                                                                                                  typing.Any] | None | typing.Any:
     s.proxies = proxies
     s.headers = random_headers()
 
@@ -466,7 +468,7 @@ def _extracted_from_onionsearchengine_10(s, onionsearchengine_url, searchstr, ma
     return result
 
 
-def tordex(searchstr):
+def tordex(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     tordex_url = supported_engines['tordex'] + "/search?query={}&page={}"
     max_nb_page = args.limit if args.limit != 0 else 100
@@ -476,7 +478,7 @@ def tordex(searchstr):
 
 
 # TODO Rename this here and in `tordex`
-def _extracted_from_tordex_(s, tordex_url, searchstr, max_nb_page):
+def _extracted_from_tordex_(s, tordex_url, searchstr, max_nb_page) -> list[typing.Any] | None | typing.Any:
     s.proxies = proxies
     s.headers = random_headers()
 
@@ -505,7 +507,7 @@ def _extracted_from_tordex_(s, tordex_url, searchstr, max_nb_page):
     return result
 
 
-def tor66(searchstr):
+def tor66(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     tor66_url = supported_engines['tor66'] + "/search?q={}&sorttype=rel&page={}"
     max_nb_page = args.limit if args.limit != 0 else 30
@@ -515,7 +517,7 @@ def tor66(searchstr):
 
 
 # TODO Rename this here and in `tor66`
-def _extracted_from_tor66_9(s, tor66_url, searchstr, max_nb_page):
+def _extracted_from_tor66_9(s, tor66_url, searchstr, max_nb_page) -> list[typing.Any] | None | typing.Any:
     s.proxies = proxies
     s.headers = random_headers()
 
@@ -543,7 +545,7 @@ def _extracted_from_tor66_9(s, tor66_url, searchstr, max_nb_page):
     return result
 
 
-def tormax(searchstr):
+def tormax(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     tormax_url = supported_engines['tormax'] + "/search?q={}"
 
@@ -557,7 +559,7 @@ def tormax(searchstr):
     return results
 
 
-def haystack(searchstr):
+def haystack(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     haystack_url = supported_engines['haystack'] + "/?q={}&offset={}"
     max_nb_page = args.limit if args.limit != 0 else 50
@@ -591,7 +593,7 @@ def haystack(searchstr):
     return results
 
 
-def multivac(searchstr):
+def multivac(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     multivac_url = supported_engines['multivac'] + "/?q={}&page={}"
     max_nb_page = args.limit if args.limit != 0 else 10
@@ -622,7 +624,7 @@ def multivac(searchstr):
     return results
 
 
-def evosearch(searchstr):
+def evosearch(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     evosearch_url = supported_engines['evosearch'] + "/evo/search.php?" \
                                                      "query={}&" \
@@ -658,7 +660,7 @@ def evosearch(searchstr):
     return results
 
 
-def deeplink(searchstr):
+def deeplink(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     deeplink_url1 = supported_engines['deeplink'] + "/index.php"
     deeplink_url2 = supported_engines['deeplink'] + "/?search={}&type=verified"
@@ -678,7 +680,7 @@ def deeplink(searchstr):
     return results
 
 
-def torgle1(searchstr):
+def torgle1(searchstr) -> list[typing.Any] | None | typing.Any:
     results = []
     torgle1_url = supported_engines['torgle1'] + "/torgle/index-frame.php?query={}&search=1&engine-ver=2&isframe=0{}"
     results_per_page = 10
@@ -712,15 +714,29 @@ def torgle1(searchstr):
     return results
 
 
-def get_domain_from_url(link):
-    fqdn_re = r"^[a-z][a-z0-9+\-.]*://([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])"
-    domain_re = re.match(fqdn_re, link)
+def get_domain_from_url(link) -> str | None:
+    """
+    Extracts and returns the domain name from a given URL.
+
+    This function uses a regular expression to parse the URL and extract the fully qualified domain name (FQDN).
+    If the URL is valid and the domain name is found, it returns the domain name as a string. If no domain
+    can be extracted, the function returns None.
+
+    Args:
+        link (str): The URL from which the domain name will be extracted.
+
+    Returns:
+        str | None: The extracted domain name as a string, or None if no domain can be extracted.
+    """
+    fqdn_pattern_regex = (r"^[a-z][a-z0-9+\-.]*://([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'("
+                          r")*+,;=:]+\])")
+    domain_re = re.match(fqdn_pattern_regex, link)
     if domain_re is not None and domain_re.lastindex == 2:
         return domain_re[2]
     return None
 
 
-def write_to_csv(csv_writer, fields):
+def write_to_csv(csv_writer, fields) -> None:
     line_to_write = []
     if args.fields and len(args.fields) > 0:
         for f in args.fields[0]:
@@ -735,7 +751,7 @@ def write_to_csv(csv_writer, fields):
     csv_writer.writerow(line_to_write)
 
 
-def link_finder(engine_str, data_obj):
+def link_finder(engine_str, data_obj) -> list[typing.Any] | None | typing.Any:
     global filename
     name = ""
     link = ""
@@ -745,7 +761,7 @@ def link_finder(engine_str, data_obj):
     if args.continuous_write:
         csv_file = open(filename, 'a', newline='')
 
-    def add_link():
+    def add_link() -> None:
         found_links.append({"engine": engine_str, "name": name, "link": link})
 
         if args.continuous_write and csv_file.writable():
@@ -872,7 +888,7 @@ def link_finder(engine_str, data_obj):
     return found_links
 
 
-def run_method(method_name_and_argument):
+def run_method(method_name_and_argument) -> list[typing.Any] | None | typing.Any:
     method_name = method_name_and_argument.split(':')[0]
     argument = method_name_and_argument.split(':')[1]
     ret = []
@@ -883,7 +899,7 @@ def run_method(method_name_and_argument):
     return ret
 
 
-def scrape():
+def scrape() -> None:
     global filename
 
     start_time = datetime.now()
