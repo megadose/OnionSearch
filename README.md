@@ -181,6 +181,8 @@ Daha sonra, kazıma sonuçlarını aktif olarak izlemek veya izlemek için 'tail
 
 ## [01Kevin01](https://github.com/01Kevin01)
 * Ek onion link kaynakları için https://github.com/01Kevin01/OnionLinksV3
+* 📄 [OnionLinksV3.md](https://github.com/01Kevin01/OnionLinksV3/blob/main/OnionLinksV3.md)
+* My e-mail:01Kevin0110@proton.me
 
 ## 📝 License
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.fr.html)
