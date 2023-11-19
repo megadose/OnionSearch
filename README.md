@@ -1,9 +1,11 @@
-# OnionSearch 
-![PyPI](https://img.shields.io/pypi/v/onionsearch) ![PyPI - Week](https://img.shields.io/pypi/dw/onionsearch) ![PyPI - Downloads](https://static.pepy.tech/badge/onionsearch) ![PyPI - License](https://img.shields.io/pypi/l/onionsearch)
-#### For BTC Donations : 1FHDM49QfZX6pJmhjLE5tB2K6CaTLMZpXZ
-## Educational purposes only
+# OnionSearch - Turkish
+![PyPI](https://img.shields.io/pypi/v/onionsearch) ![PyPI - Hafta](https://img.shields.io/pypi/dw/onionsearch) ![PyPI - İndir](https://static.pepy.tech/badge/onionsearch) ![PyPI - Lisans](https://img.shields.io/pypi/l/onionsearch)
+#### BTC Bağışları İçin : 1FHDM49QfZX6pJmhjLE5tB2K6CaTLMZpXZ
+## Yalnızca Eğitim Amaçlı
 
-OnionSearch is a Python3 script that scrapes urls on different ".onion" search engines.
+## !!UYARI!!
+
+OnionSearch, farklı ".onion" arama motorlarındaki URL'leri kazıyan bir Python3 komut dosyasıdır.
 
 ![](https://files.catbox.moe/vguy1e.png)
 
@@ -12,10 +14,10 @@ OnionSearch is a Python3 script that scrapes urls on different ".onion" search e
 ![](https://github.com/megadose/gif-demo/raw/master/onionsearch.gif)
 
 
-## 💡 Prerequisite
+## 💡 Önkoşul
 [Python 3](https://www.python.org/download/releases/3.0/)
 
-## 📚 Currently supported Search engines
+## 📚 Şu anda desteklenen Arama motorları
 - ahmia
 - darksearchio
 - onionland
@@ -33,12 +35,12 @@ OnionSearch is a Python3 script that scrapes urls on different ".onion" search e
 - evosearch
 - deeplink
 
-## 🛠️ Installation
-### With PyPI
+## 🛠️ İndirme
+### PyPI ile
 
 ```pip3 install onionsearch```
 
-### With Github
+### Github ile
 
 ```bash
 git clone https://github.com/megadose/OnionSearch.git
@@ -47,11 +49,14 @@ python3 setup.py install
 ```
 
 
-## 📈  Usage
+## 📈  Kullanım
+Tabi, işte çevirisi:
 
-Help:
 ```
-usage: onionsearch [-h] [--proxy PROXY] [--output OUTPUT]
+Yardım:
+```
+```
+kullanım: onionsearch [-h] [--proxy PROXY] [--output OUTPUT]
                   [--continuous_write CONTINUOUS_WRITE] [--limit LIMIT]
                   [--engines [ENGINES [ENGINES ...]]]
                   [--exclude [EXCLUDE [EXCLUDE ...]]]
@@ -59,122 +64,123 @@ usage: onionsearch [-h] [--proxy PROXY] [--output OUTPUT]
                   [--field_delimiter FIELD_DELIMITER] [--mp_units MP_UNITS]
                   search
 
-positional arguments:
-  search                The search string or phrase
+konumsal argümanlar:
+  search                Arama dizesi veya ifade
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --proxy PROXY         Set Tor proxy (default: 127.0.0.1:9050)
-  --output OUTPUT       Output File (default: output_$SEARCH_$DATE.txt), where $SEARCH is replaced by the first chars of the search string and $DATE is replaced by the datetime
+isteğe bağlı argümanlar:
+  -h, --help            Bu yardım mesajını göster ve çık
+  --proxy PROXY         Tor proxy ayarla (varsayılan: 127.0.0.1:9050)
+  --output OUTPUT       Çıkış Dosyası (varsayılan: output_$SEARCH_$DATE.txt), burada $SEARCH arama dizesinin ilk karakterleri ile değiştirilir ve $DATE tarih saat ile değiştirilir
   --continuous_write CONTINUOUS_WRITE
-                        Write progressively to output file (default: False)
-  --limit LIMIT         Set a max number of pages per engine to load
+                        Çıktı dosyasına sürekli olarak yaz (varsayılan: False)
+  --limit LIMIT         Yüklenecek maksimum sayfa sayısını ayarla
   --engines [ENGINES [ENGINES ...]]
-                        Engines to request (default: full list)
+                        İstek gönderilecek motorlar (varsayılan: tam liste)
   --exclude [EXCLUDE [EXCLUDE ...]]
-                        Engines to exclude (default: none)
+                        Hariç tutulacak motorlar (varsayılan: yok)
   --fields [FIELDS [FIELDS ...]]
-                        Fields to output to csv file (default: engine name link), available fields are shown below
+                        Csv dosyasına çıktı alınacak alanlar (varsayılan: motor adı link), mevcut alanlar aşağıda gösterilmiştir
   --field_delimiter FIELD_DELIMITER
-                        Delimiter for the CSV fields
-  --mp_units MP_UNITS   Number of processing units (default: core number minus 1)
+                        CSV alanları için ayraç
+  --mp_units MP_UNITS   İşlem birimi sayısı (varsayılan: çekirdek sayısı eksi 1)
 
 [...]
 ```
 
-### Multi-processing behaviour
+### Çoklu İşlem Davranışı
 
-By default, the script will run with the parameter `mp_units = cpu_count() - 1`. It means if you have a machine with 4 cores,
-it will run 3 scraping functions in parallel. You can force `mp_units` to any value but it is recommended to leave to default.
-You may want to set it to 1 to run all requests sequentially (disabling multi-processing feature).
+Varsayılan olarak, betik `mp_units = cpu_count() - 1` parametresiyle çalışacaktır. Yani, 4 çekirdekli bir makineniz varsa,
+3 adet veri çekme işlevini paralel olarak çalıştıracaktır. `mp_units`'i istediğiniz bir değere zorlayabilirsiniz, ancak varsayılan değerde bırakmanız önerilir.
+Tüm istekleri sırayla çalıştırmak için `mp_units`'i 1 olarak ayarlayabilirsiniz (çoklu işlem özelliğini devre dışı bırakarak).
 
-Please note that continuous writing to csv file has not been *heavily* tested with multiprocessing feature and therefore
-may not work as expected.
+Lütfen, sürekli olarak csv dosyasına yazma işlemi, çoklu işlem özelliği ile *yoğun bir şekilde* test edilmemiş olabilir ve bu nedenle
+beklendiği gibi çalışmayabilir.
 
-Please also note that the progress bars may not be properly displayed when `mp_units` is greater than 1.
-**It does not affect the results**, so don't worry.
+Lütfen ayrıca, `mp_units` 1'den büyük olduğunda ilerleme çubuklarının düzgün bir şekilde gösterilmeyebileceğini unutmayın.
+**Bu sonuçları etkilemez**, endişelenmeyin.
 
-### Examples
+### Örnekler
 
-To request all the engines for the word "computer":
+"computer" kelimesi için tüm motorlardan istekte bulunmak için:
 ```
 onionsearch "computer"
 ```
 
-To request all the engines excepted "Ahmia" and "Candle" for the word "computer":
+"computer" kelimesi için "Ahmia" ve "Candle" hariç tüm motorlardan istekte bulunmak için:
 ```
 onionsearch "computer" --exclude ahmia candle
 ```
 
-To request only "Tor66", "DeepLink" and "Phobos" for the word "computer":
+Sadece "Tor66", "DeepLink" ve "Phobos" için "computer" kelimesinden istekte bulunmak için:
 ```
 onionsearch "computer" --engines tor66 deeplink phobos
 ```
 
-The same as previously but limiting to 3 the number of pages to load per engine:
+Öncekinden aynı ancak her motor için yüklenecek sayfa sayısını 3'e sınırlamak için:
 ```
 onionsearch "computer" --engines tor66 deeplink phobos --limit 3
 ```
 
-Please kindly note that the list of supported engines (and their keys) is given in the script help (-h).
+Lütfen desteklenen motorların (ve anahtarlarının) listesi betik yardımında (-h) verilmiştir.
 
 
-### Output
+### Çıktı
 
-#### Default output
+#### Varsayılan çıktı
 
-By default, the file is written at the end of the process. The file will be csv formatted, containing the following columns:
+Varsayılan olarak, dosya işlem sonunda yazılır. Dosya csv formatında olacak ve aşağıdaki sütunları içerecektir:
 ```
-"engine","name of the link","url"
+"motor","bağlantı adı","url"
 ```
 
-#### Customizing the output fields
+#### Çıktı alanlarını özelleştirme
 
-You can customize what will be flush in the output file by using the parameters `--fields` and `--field_delimiter`.
+Çıktı dosyasına neyin yazılacağını `--fields` ve `--field_delimiter` parametrelerini kullanarak özelleştirebilirsiniz.
 
-`--fields` allows you to add, remove, re-order the output fields. The default mode is show just below. Instead, you can for instance
-choose to output:
+`--fields`, çıktı alanlarına eklemek, çıkarmak, yeniden düzenlemek için kullanılır. Varsayılan mod aşağıda gösterilmiştir. Bunun yerine örneğin
+şunu çıktı almak için:
 ```
-"engine","name of the link","url","domain"
+"motor","bağlantı adı","url","alan"
 ```
-by setting `--fields engine name link domain`.
+`--fields` parametresini `engine name link domain` olarak ayarlayarak yapabilirsiniz.
 
-Or even, you can choose to output:
+Ya da hatta şunu çıktı almak için:
 ```
-"engine","domain"
+"motor","alan"
 ```
-by setting `--fields engine domain`.
+`--fields` parametresini `engine domain` olarak ayarlayarak yapabilirsiniz.
 
-These are examples but there are many possibilities.
+Bunlar örneklerdir ancak birçok olasılık vardır.
 
-Finally, you can also choose to modify the CSV delimiter (comma by default), for instance: `--field_delimiter ";"`.
+Son olarak, CSV ayraçını (varsayılan olarak virgül) değiştirmeyi seçebilirsiniz, örneğin: `--field_delimiter ";"`.
 
-#### Changing filename
+#### Dosya adını değiştirme
 
-The filename will be set by default to `output_$DATE_$SEARCH.txt`, where $DATE represents the current datetime and $SEARCH the first
-characters of the search string.
+Dosya adı varsayılan olarak `output_$DATE_$SEARCH.txt` olarak ayarlanacaktır, burada $DATE geçerli tarih ve saatı, $SEARCH ise arama dizesinin ilk karakterlerini temsil eder.
 
-You can modify this filename by using `--output` when running the script, for instance:
+Betik çalıştırılırken bunu `--output` kullanarak değiştirebilirsiniz, örneğin:
 ```
 onionsearch "computer" --output "\$DATE.csv"
 onionsearch "computer" --output output.txt
 onionsearch "computer" --output "\$DATE_\$SEARCH.csv"
 ...
 ```
-(Note that it might be necessary to escape the dollar character.)
+(Nota: Dolar işareti karakterini kaçırmak gerekebilir.)
 
-In the csv file produced, the name and url strings are sanitized as much as possible, but there might still be some problems...
-
+Üretilen csv dosyasında, ad ve url dizeleri mümkün olduğunca temizlenmiş olsa da, hala bazı sorunlar olabilir...
 #### Write progressively
 
-You can choose to progressively write to the output (instead of everything at the end, which would prevent
-losing the results if something goes wrong). To do so you have to use `--continuous_write True`, just as is:
+Çıktıya aşamalı olarak yazmayı seçebilirsiniz (sondaki her şey yerine, bu da bir şeyler ters giderse sonuçları kaybetmek). Bunu yapmak için kullanmanız gerekir `--continuous_write True`, Aynen olduğu gibi:
 ```
 onionsearch "computer" --continuous_write True
 ```
-You can then use the `tail -f` (tail follow) Unix command to actively watch or monitor the results of the scraping.
-## Thank you to [Gobarigo](https://github.com/Gobarigo)
-## Thank you [mxrch](https://github.com/mxrch) for this logo
+Daha sonra, kazıma sonuçlarını aktif olarak izlemek veya izlemek için 'tail -f' (kuyruk takibi) Unix komutunu kullanabilirsiniz. 
+
+## [Gobarigo]'ya teşekkürler(https://github.com/Gobarigo) 
+## Bu logo için teşekkür ederim [mxrch](https://github.com/mxrch)
+
+## [01Kevin01](https://github.com/01Kevin01)
+* Ek onion link kaynakları için https://github.com/01Kevin01/OnionLinksV3
 
 ## 📝 License
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.fr.html)
