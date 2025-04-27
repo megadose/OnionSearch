@@ -103,7 +103,7 @@ Please also note that the progress bars may not be properly displayed when `mp_u
 
 To request all the engines for the word "computer":
 ```
-onionsearch "computer"
+onionsearch "computer"an
 ```
 
 To request all the engines excepted "Ahmia" and "Candle" for the word "computer":
