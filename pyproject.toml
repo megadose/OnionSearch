@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onionsearch"
+version = "1.3"
+description = "OnionSearch is a script that scrapes urls on different .onion search engines."
+authors = [
+  { name = "megadose" }
+]
+
+dependencies = [
+  "requests",
+  "argparse",
+  "termcolor",
+  "tqdm",
+  "html5lib",
+  "bs4",
+  "PySocks"
+]
+
+readme = "README.md"
+license = "GPL-3.0-or-later"
+urls = { Homepage = "http://github.com/megadose/OnionSearch" }
+
+[project.scripts]
+onionsearch = "onionsearch.core:scrape"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["onionsearch*"]
+
+[tool.setuptools]
+include-package-data = true

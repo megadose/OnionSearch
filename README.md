@@ -19,24 +19,16 @@ OnionSearch is a Python3 script that scrapes urls on different ".onion" search e
 
 ## 💡 Prerequisite
 [Python 3](https://www.python.org/download/releases/3.0/)
+[Tor](https://community.torproject.org/onion-services/setup/install/)
 
 ## 📚 Currently supported Search engines
 - ahmia
-- darksearchio
 - onionland
-- notevil
-- darksearchenginer
-- phobos
 - onionsearchserver
 - torgle
-- onionsearchengine
-- tordex
 - tor66
-- tormax
 - haystack
-- multivac
-- evosearch
-- deeplink
+- torch
 
 ## 🛠️ Installation
 ### With PyPI
@@ -48,11 +40,12 @@ OnionSearch is a Python3 script that scrapes urls on different ".onion" search e
 ```bash
 git clone https://github.com/megadose/OnionSearch.git
 cd OnionSearch/
-python3 setup.py install
+pip3 install .
 ```
 
 
 ## 📈  Usage
+Start the tor proxy with ```tor```
 
 Help:
 ```

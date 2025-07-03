@@ -1,0 +1,7 @@
+requests
+argparse
+termcolor
+html5lib
+bs4
+PySocks
+tqdm
