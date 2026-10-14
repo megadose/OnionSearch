@@ -52,6 +52,17 @@ python3 setup.py install
 ```
 
 
+### With OTinstaller
+
+On Linux, you can also use [OTinstaller](https://github.com/OSINTVerseHQ/OTinstaller), a third-party tool manager that installs the PyPI release into its own virtualenv. It isn't maintained by the OnionSearch authors, so please report problems with it [on the OTinstaller tracker](https://github.com/OSINTVerseHQ/OTinstaller/issues). Tor still needs to be running on `127.0.0.1:9050` (or pass `--proxy`).
+
+```bash
+pipx install otinstaller
+otinstaller init
+otinstaller install onionsearch
+otinstaller run onionsearch -- "computer"   # same as onionsearch "computer"
+```
+
 ## 📈  Usage
 
 Help:
